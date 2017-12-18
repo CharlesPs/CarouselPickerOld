@@ -16,8 +16,6 @@ import android.widget.LinearLayout;
 import java.util.ArrayList;
 import java.util.List;
 
-import pe.nativosdigitales.android.carouselpicker.Helpers.Basic;
-
 /**
  * Created by Carlos Aguinaga on 9/09/2017.
  */
@@ -111,22 +109,6 @@ public class CarouselPicker extends HorizontalScrollView {
             public void onScrollChanged(final int l, int t, int oldl, int oldt) {
 
                 carousel_position = getScrollPosition(l);
-
-                Basic.TaskHandle handle = Basic.setTimeout(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        carousel_position = getScrollPosition(l);
-
-                        if (carousel_position >= 0) {
-
-                            carousel_images.get(carousel_position).performClick();
-
-                            centerActive(carousel_images.get(carousel_position));
-                        }
-                    }
-                }, 500);
-                handle.invalidate();
             }
         });
 
