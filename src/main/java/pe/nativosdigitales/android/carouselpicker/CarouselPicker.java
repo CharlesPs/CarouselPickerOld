@@ -16,6 +16,8 @@ import android.widget.LinearLayout;
 import java.util.ArrayList;
 import java.util.List;
 
+import pe.nativosdigitales.android.carouselpicker.Helpers.Basic;
+
 /**
  * Created by Carlos Aguinaga on 9/09/2017.
  */
@@ -36,10 +38,15 @@ public class CarouselPicker extends HorizontalScrollView {
     private Integer last_scroll_position = -1;
 
     private Integer carousel_position = -1;
+    private Integer last_carousel_position = -1;
 
     private List<View> carousel_images = new ArrayList<>();
     private List<Drawable> carousel_drawables_on = new ArrayList<>();
     private List<Drawable> carousel_drawables_off = new ArrayList<>();
+
+    private Runnable scrollerTask;
+    private int initialPosition;
+    private int newCheck = 100;
 
     public OnScrollChangedListener mOnScrollChangedListener;
 
@@ -73,6 +80,24 @@ public class CarouselPicker extends HorizontalScrollView {
         this.normal_size = normal_size;
         this.active_size = active_size;
 
+        scrollerTask = new Runnable() {
+
+            public void run() {
+
+                int newPosition = getScrollY();
+                if(initialPosition - newPosition == 0){//has stopped
+
+                    if(on_scroll_ended_listener != null){
+
+                        on_scroll_ended_listener.OnScrollEnded();
+                    }
+                }else{
+                    initialPosition = getScrollY();
+                    CarouselPicker.this.postDelayed(scrollerTask, newCheck);
+                }
+            }
+        };
+
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
         dm_density = displayMetrics.density;
 
@@ -83,21 +108,25 @@ public class CarouselPicker extends HorizontalScrollView {
 
         CarouselPicker.this.setOnScrollChangedListener(new OnScrollChangedListener() {
             @Override
-            public void onScrollChanged(int l, int t, int oldl, int oldt) {
+            public void onScrollChanged(final int l, int t, int oldl, int oldt) {
 
-                Integer dp_position = Math.round(l / dm_density);
+                carousel_position = getScrollPosition(l);
 
-                carousel_position = (dp_position + (item_width / 2)) / item_width;
+                Basic.TaskHandle handle = Basic.setTimeout(new Runnable() {
+                    @Override
+                    public void run() {
 
-                if (!last_scroll_position.equals(carousel_position)) {
+                        carousel_position = getScrollPosition(l);
 
-                    last_scroll_position = carousel_position;
-                    Log.e(TAG, "onScrollChanged Left: " + carousel_position);
+                        if (carousel_position >= 0) {
 
-                    carousel_images.get(carousel_position).performClick();
+                            carousel_images.get(carousel_position).performClick();
 
-//                    setActive(carousel_images.get(carousel_position));
-                }
+                            centerActive(carousel_images.get(carousel_position));
+                        }
+                    }
+                }, 500);
+                handle.invalidate();
             }
         });
 
@@ -122,14 +151,11 @@ public class CarouselPicker extends HorizontalScrollView {
 
                 if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
 
-                    Log.e(TAG, "onTouch: endTouch" );
+                    Log.e(TAG, "onTouch: endTouch");
 
-                    on_scroll_ended_listener.OnScrollEnded();
+//                    on_scroll_ended_listener.OnScrollEnded();
 
-                    if (carousel_position >= 0) {
-
-                        centerActive(carousel_images.get(carousel_position));
-                    }
+                    CarouselPicker.this.startScrollerTask();
                 }
 
                 return false;
@@ -137,6 +163,19 @@ public class CarouselPicker extends HorizontalScrollView {
         });
 
         createContainer();
+    }
+
+    public void startScrollerTask(){
+
+        initialPosition = getScrollY();
+        CarouselPicker.this.postDelayed(scrollerTask, newCheck);
+    }
+
+    private Integer getScrollPosition (int l) {
+
+        Integer dp_position = Math.round(l / dm_density);
+
+        return (dp_position + (item_width / 2)) / item_width;
     }
 
     @Override
