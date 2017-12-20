@@ -33,10 +33,7 @@ public class CarouselPicker extends HorizontalScrollView {
 
     private LinearLayout scroll_container;
 
-    private Integer last_scroll_position = -1;
-
     private Integer carousel_position = -1;
-    private Integer last_carousel_position = -1;
 
     private List<View> carousel_images = new ArrayList<>();
     private List<Drawable> carousel_drawables_on = new ArrayList<>();
@@ -116,8 +113,6 @@ public class CarouselPicker extends HorizontalScrollView {
             @Override
             public void OnScrollEnded() {
 
-                Log.e(TAG, "OnScrollEnded position: " + carousel_position);
-
                 if (carousel_position >= 0) {
 
                     carousel_images.get(carousel_position).performClick();
@@ -132,10 +127,6 @@ public class CarouselPicker extends HorizontalScrollView {
             public boolean onTouch(View view, MotionEvent motionEvent) {
 
                 if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-
-                    Log.e(TAG, "onTouch: endTouch");
-
-//                    on_scroll_ended_listener.OnScrollEnded();
 
                     CarouselPicker.this.startScrollerTask();
                 }
@@ -274,8 +265,6 @@ public class CarouselPicker extends HorizontalScrollView {
         addFakeItem();
 
         for (int i = 0; i < carousel_images.size(); i += 1) {
-
-
 
             scroll_container.addView(carousel_images.get(i));
         }
